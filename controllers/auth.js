@@ -4,12 +4,18 @@ const passport = require('../config/ppConfig');
 
 const { User } = require('../models');
 
-router.get('/signup', (req, res) => {
+  router.get('/signup', (req, res) => {
     res.render('auth/signup');
   });
   
   router.get('/login', (req, res) => {
     res.render('auth/login');
+  });
+
+  router.get('/logout', (req, res) => {
+    req.logOut(); // logs the user out of the session
+    req.flash('success', 'Logging out... See you next time!');
+    res.redirect('/');
   });
 
   router.post('/login', passport.authenticate('local', {
@@ -18,7 +24,7 @@ router.get('/signup', (req, res) => {
     successFlash: 'Welcome back ...',
     failureFlash: 'Either email or password is incorrect' 
   }));
-  
+
   router.post('/signup', async (req, res) => {
     // we now have access to the user info (req.body);
     const { email, name, password } = req.body; // goes and us access to whatever key/value inside of the object
@@ -51,4 +57,5 @@ router.get('/signup', (req, res) => {
     }
   });
 
+  
 module.exports = router; 

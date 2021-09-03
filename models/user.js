@@ -1,4 +1,5 @@
 'use strict';
+const bcrypt = require('bcrypt');
 
 const {
   Model
@@ -47,5 +48,29 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   
+    // Before a user is created, we are encrypting the password and using hash in its place
+  User.addHook('beforeCreate', (pendingUser) => { // pendingUser is user object that gets passed to DB
+    // Bcrypt is going to hash the password
+    let hash = bcrypt.hashSync(pendingUser.password, 12); // hash 12 times *exponentially increases time requirement, 12 is upper limit here*
+    pendingUser.password = hash; // this will go to the DB
+  });
+
+  // Check the password on Sign-In and compare it to the hashed password in the DB
+  User.prototype.validPassword = function(typedPassword) {
+    let isCorrectPassword = bcrypt.compareSync(typedPassword, this.password); // check to see if password is correct.
+
+    return isCorrectPassword;
+  }
+
+  // return an object from the database of the user without the encrypted password
+  User.prototype.toJSON = function() {
+    let userData = this.get(); 
+    delete userData.password; // it doesn't delete password from database, only removes it. 
+    
+    return userData;
+  }
+
+
+
   return User; // add functions above 
 };
